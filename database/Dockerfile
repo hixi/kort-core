@@ -20,7 +20,7 @@ RUN chmod 0644 /etc/cron.d/updater
 # Create the log file to be able to run tail
 RUN touch /var/log/cron.log
 
-# install python
+# install python3
 RUN apt-get update \
     && apt-get install -y \
     build-essential \
@@ -31,11 +31,13 @@ RUN apt-get update \
     make \
     mercurial \
     pkg-config \
-    python3.4 \
-    python3.4-dev \
+    python3 \
+    python3-dev \
+    python3-pip \
     ssh \
     && apt-get autoremove \
-    && apt-get clean
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # copy helper scripts
 COPY keepright/* /docker-entrypoint-initdb.d/keepright/
@@ -64,10 +66,8 @@ RUN chown -R postgres:postgres /docker-entrypoint-initdb.d/kort2osm/kort2osm.log
 RUN chown -R postgres:postgres /docker-entrypoint-initdb.d/kort2osm/kort2osm_error.log
 
 # install python dependencies for mission creator
-ADD https://raw.githubusercontent.com/pypa/pip/701a80f451a62aadf4eeb21f371b45424821582b/contrib/get-pip.py /root/get-pip.py
-RUN python3.4 /root/get-pip.py
-RUN pip3.4 install -r /docker-entrypoint-initdb.d/mission_creator/requirements.txt
-RUN pip3.4 install -r /docker-entrypoint-initdb.d/kort2osm/requirements.txt
+RUN pip3 install -r /docker-entrypoint-initdb.d/mission_creator/requirements.txt
+RUN pip3 install -r /docker-entrypoint-initdb.d/kort2osm/requirements.txt
 
 
 #### copy and run initialization scripts
