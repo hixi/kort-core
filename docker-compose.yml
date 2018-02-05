@@ -1,53 +1,51 @@
-api:
-  restart: always
-  build: ./src/api
-  expose:
-    - "8000"
-  links:
-    - postgres:postgres
-    - tokeninfo:tokeninfo
-  volumes:
-    - /usr/src/app/static
-  env_file:
-    - .env
-    - .envTest
-  command: /usr/local/bin/gunicorn -w 2 -b :8000 app:app
-
-tokeninfo:
-  restart: always
-  build: ./src/api
-  expose:
-    - "7979"
-  links:
-    - postgres:postgres
-  volumes:
-    - /usr/src/app/static
-  env_file: .env
-  command: /usr/local/bin/python3 tokeninfo.py
-
-nginx:
-  restart: always
-  build: ./src/nginx/
-  ports:
-    - "80:80"
-  volumes:
-    - /www/static
-  volumes_from:
-    - api
-  links:
-    - api:web
-
-data:
-  image: mdillon/postgis
-  volumes:
-    - /var/lib/postgresql
-  command: "true"
-
-postgres:
-  restart: always
-  build: ./database/
-  env_file: .env
-  volumes_from:
-    - data
-  ports:
-    - "5432:5432"
+version: '3.3'
+services:
+  api:
+    restart: always
+    build: ./src/api
+    expose:
+      - "8000"
+    links:
+      - postgres:postgres
+      - tokeninfo:tokeninfo
+    volumes:
+      - api_static:/usr/src/app/static
+    env_file:
+      - .env
+      - .envTest
+    command: /usr/local/bin/gunicorn -w 2 -b :8000 app:app
+  tokeninfo:
+    restart: always
+    build: ./src/api
+    expose:
+      - "7979"
+    links:
+      - postgres:postgres
+    volumes:
+      - api_static:/usr/src/app/static
+    env_file: .env
+    command: /usr/local/bin/python3 tokeninfo.py
+  nginx:
+    restart: always
+    build: ./src/nginx/
+    ports:
+      - "80:80"
+    volumes:
+      - nginx_data:/www/static
+      - api_static:/usr/src/app/static
+    links:
+      - api:web
+  postgres:
+    restart: always
+    build: ./database/
+    env_file: .env
+    volumes:
+      - pg_data:/var/lib/postgresql
+    command: postgres -c max_wal_size=2GB
+    # for "debugging" (ie. looking into DB from localhost)
+    ports:
+      - "5432:5432"
+volumes:
+  api_static:
+  pg_data:
+  nginx_data:
