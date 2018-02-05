@@ -1,4 +1,4 @@
-FROM mdillon/postgis
+FROM mdillon/postgis:9.6
 #FROM mdillon/postgis:9.6-2.3
 
 # make the "en_US.UTF-8" locale so postgres will be utf-8 enabled by default
